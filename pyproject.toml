@@ -1,0 +1,91 @@
+[project]
+name = "agent-primitives"
+version = "0.1.0"
+description = "Exploring composable building blocks for production AI agents and BAML"
+readme = "README.md"
+requires-python = ">=3.13"
+authors = [
+    { name = "Dim Kharitonov", email = "dimds@fastmail.com" }
+]
+
+license = { text = "MIT" }
+
+
+dependencies = [
+    "baml-py>=0.201.0",
+    "pydantic>=2.11.7",
+    "python-dotenv>=1.1.1",
+    "typer>=0.16.0",
+]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "D",   # pydocstyle
+    "N",   # pep8-naming
+]
+ignore = [
+    "D203",    # 1 blank line required before class docstring
+    "D212",    # Multi-line docstring summary should start at the first line
+]
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "build",
+    "dist",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["speech_prep"]
+force-single-line = false
+force-sort-within-sections = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.9"
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unreachable = true
+disallow_any_generics = false
+disallow_subclassing_any = false
+exclude = [
+    "venv/",
+    ".venv/",
+    "build/",
+    "dist/",
+]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_decorators = false
+
+[dependency-groups]
+dev = [
+    "mypy>=1.16.1",
+    "pytest>=8.4.1",
+    "pytest-mock>=3.14.1",
+    "ruff>=0.12.2",
+]
+

@@ -1,0 +1,28 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Tests
+.coverage
+.coverage.*
+
+# Environment variables
+.env
+
+# BAML client generated files
+baml_client/
+
+# Log files
+log/
+*.log
