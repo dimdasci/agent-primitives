@@ -17,4 +17,8 @@ fix:
 	uv run ruff check --fix --unsafe-fixes src/
 	uv run ruff format src/
 
-.PHONY: lint format typecheck fix
+api:
+	@echo "🚀 Starting API server..."
+	uv run uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+
+.PHONY: lint format typecheck fix api
