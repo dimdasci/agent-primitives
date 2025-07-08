@@ -12,9 +12,11 @@ license = { text = "MIT" }
 
 
 dependencies = [
+    "anyio>=4.9.0",
     "baml-py>=0.201.0",
     "pydantic>=2.11.7",
     "python-dotenv>=1.1.1",
+    "trio>=0.30.0",
     "typer>=0.16.0",
 ]
 

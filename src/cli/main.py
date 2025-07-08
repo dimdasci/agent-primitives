@@ -2,8 +2,9 @@ import logging
 
 from dotenv import load_dotenv
 import typer
+from anyio import run
 
-from src.agent_primitives.agent import run
+from src.agent_primitives.agent import run as agent_run
 from src.agent_primitives.model import Event, Thread, Intents
 from src.agent_primitives.model import EventType as ET
 
@@ -22,16 +23,17 @@ def main():
     """Main function to run the agent CLI."""
     question = typer.prompt("What's your question?")
     logger.info(f"Running agent with question: {question}")
-    message = agent_loop(question)
+    
+    message = run(agent_loop, question, backend="asyncio")
     typer.echo(message)
     logger.info(f"Agent response: {message}")
 
 
-def agent_loop(question: str) -> str:
+async def agent_loop(question: str) -> str:
     """Run the agent in a loop until the user decides to stop."""
     thread = Thread(events=[Event(type=ET.USER_INPUT, data=question)])
     while True:
-        _ = run(thread)
+        _ = await agent_run(thread)
 
         last_event = thread.events[-1] if thread.events else None
         if not last_event:

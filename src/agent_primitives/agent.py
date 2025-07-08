@@ -1,6 +1,6 @@
 from src.agent_primitives.model import Event, Intents, Thread
 from src.agent_primitives.model import EventType as et
-from src.baml_client.sync_client import b
+from src.baml_client.async_client import b
 
 ACTIONS = {
     Intents.ADD: lambda x, y: x + y,
@@ -10,11 +10,11 @@ ACTIONS = {
 }
 
 
-def run(thread: Thread) -> Thread:
+async def run(thread: Thread) -> Thread:
     """Run the agent with the given question."""
     while True:
         # Call the BAML function to determine the next step
-        next_step = b.DetermineNextStep(thread=thread.serialize())
+        next_step = await b.DetermineNextStep(thread=thread.serialize())
 
         # Define intent
         intent = Intents(next_step.intent)

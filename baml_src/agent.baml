@@ -1,11 +1,17 @@
 type HumanTools = ClarificationRequest | DoneForNow
 
 class ClarificationRequest {
+  reasoning string @description(#"
+    why the task needs clarification?
+  "#)
   intent "request_more_information"
   message string 
 }
 
 class DoneForNow {
+  reasoning string @description(#"
+    why the task is done?"
+  "#)
   intent "done_for_now"
   message string @description(#"
     message to send to the user about the work that was done. 
@@ -33,6 +39,8 @@ function DetermineNextStep(
         What should the next step be?
 
         {{ ctx.output_format }}
+
+        First, think about the task at hand, what do you have to solve it, and plan out what to do next.
     "#
 }
 
