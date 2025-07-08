@@ -14,7 +14,7 @@ typecheck:
 
 fix:
 	@echo "🛠️  Running ruff fix..."
-	uv run ruff check --fix --unsafe-fix src/
+	uv run ruff check --fix --unsafe-fixes src/
 	uv run ruff format src/
 
 .PHONY: lint format typecheck fix
