@@ -23,7 +23,7 @@ def main():
     """Main function to run the agent CLI."""
     question = typer.prompt("What's your question?")
     logger.info(f"Running agent with question: {question}")
-    
+
     message = run(agent_loop, question, backend="asyncio")
     typer.echo(message)
     logger.info(f"Agent response: {message}")

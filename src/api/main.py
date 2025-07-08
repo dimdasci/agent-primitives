@@ -29,6 +29,7 @@ app = FastAPI(
     version="0.1.0",
 )
 
+
 # Define request and response models
 class MessageRequest(BaseModel):
     message: str
@@ -47,41 +48,44 @@ async def create_thread(request: MessageRequest):
     Create a new thread with an initial user message and run the agent.
     """
     logger.info(f"Creating new thread with message: {request.message}")
-    
+
     # Create a new thread with the user message
     thread = Thread(events=[Event(type=ET.USER_INPUT, data=request.message)])
-    
+
     # Run the agent with the thread
     await agent_run(thread)
-    
+
     # Get the last event
     last_event = thread.events[-1] if thread.events else None
-    
+
     if not last_event:
         logger.error("No events found in the thread after agent run")
         raise HTTPException(status_code=500, detail="Agent processing failed")
-    
+
     if last_event.type != ET.SYSTEM_RESPONSE:
         logger.error(f"Unexpected event type: {last_event.type}")
-        raise HTTPException(status_code=500, detail=f"Unexpected event type: {last_event.type}")
-    
+        raise HTTPException(
+            status_code=500, detail=f"Unexpected event type: {last_event.type}"
+        )
+
     # Format events for response
     events_data = []
     for event in thread.events:
-        event_data = {
-            "type": event.type.value,
-            "data": event.data
-        }
+        event_data = {"type": event.type.value, "data": event.data}
         if event.type == ET.SYSTEM_RESPONSE:
             event_data["intent"] = event.data.intent
             event_data["message"] = event.data.message
         events_data.append(event_data)
-    
+
     # Return the response
     return ThreadResponse(
         events=events_data,
-        last_message=last_event.data.message if last_event.type == ET.SYSTEM_RESPONSE else None,
-        intent=last_event.data.intent if last_event.type == ET.SYSTEM_RESPONSE else None
+        last_message=last_event.data.message
+        if last_event.type == ET.SYSTEM_RESPONSE
+        else None,
+        intent=last_event.data.intent
+        if last_event.type == ET.SYSTEM_RESPONSE
+        else None,
     )
 
 
@@ -98,4 +102,5 @@ async def get_thread(thread_id: str):
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
