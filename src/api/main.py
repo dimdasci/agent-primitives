@@ -1,14 +1,13 @@
 import logging
-from typing import Dict, Any, Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Path, Request
 from pydantic import BaseModel
 
 from src.agent_primitives.agent import run as agent_run
 from src.agent_primitives.model import Event, Thread, Intents
 from src.agent_primitives.model import EventType as ET
-
+from src.state import ThreadInMemoryStore
 
 # Configure logging
 # set logging output to log/agent_primitives.log
@@ -29,6 +28,9 @@ app = FastAPI(
     version="0.1.0",
 )
 
+# Initialize the in-memory store
+store = ThreadInMemoryStore(logger=logger)
+
 
 # Define request and response models
 class MessageRequest(BaseModel):
@@ -36,14 +38,15 @@ class MessageRequest(BaseModel):
 
 
 class ThreadResponse(BaseModel):
-    thread_id: Optional[str] = None
-    events: list[Dict[str, Any]]
-    last_message: Optional[str] = None
-    intent: Optional[str] = None
+    thread_id: str
+    thread: Thread
+    message: str | None = None
+    intent: Intents | None = None
+    response_url: str | None
 
 
 @app.post("/thread", response_model=ThreadResponse)
-async def create_thread(request: MessageRequest):
+async def create_thread(request: MessageRequest, req: Request):
     """
     Create a new thread with an initial user message and run the agent.
     """
@@ -52,8 +55,69 @@ async def create_thread(request: MessageRequest):
     # Create a new thread with the user message
     thread = Thread(events=[Event(type=ET.USER_INPUT, data=request.message)])
 
+    # Store the thread in memory
+    thread_id = store.add(thread)
+    response_url = str(req.url_for("process_thread_response", thread_id=thread_id))
+
+    return await pass_to_agent(thread_id, thread, response_url)
+
+
+@app.get("/thread/{thread_id}", response_model=ThreadResponse)
+async def get_thread(thread_id: str = Path(..., regex="^[a-zA-Z0-9]{6}$")):
+    """
+    Get the status of a thread by ID.
+    Note: This is a placeholder implementation.
+    """
+
+    logger.info(f"Retrieving thread with ID: {thread_id}")
+    thread = store.get(thread_id)
+    if thread is None:
+        logger.error(f"Thread #{thread_id} not found")
+        raise HTTPException(status_code=404, detail=f"Thread #{thread_id} not found")
+
+    return ThreadResponse(
+        thread_id=thread_id,
+        thread=thread,
+        message=None,
+        intent=None,
+        response_url=f"/thread/{thread_id}/response",
+    )
+
+
+@app.post("/thread/{thread_id}/response", response_model=ThreadResponse)
+async def process_thread_response(
+    request: MessageRequest,
+    req: Request,
+    thread_id: str = Path(..., regex="^[a-zA-Z0-9]{6}$"),
+):
+    """
+    Process a response for a specific thread.
+    """
+
+    thread = store.get(thread_id)
+
+    if thread is None:
+        logger.error(f"Thread #{thread_id} not found")
+        raise HTTPException(status_code=404, detail=f"Thread #{thread_id} not found")
+
+    thread.events.append(Event(type=ET.USER_INPUT, data=request.message))
+    request_url = str(req.url_for("process_thread_response", thread_id=thread_id))
+
+    return await pass_to_agent(thread_id, thread, request_url)
+
+
+async def pass_to_agent(id: str, thread: Thread, response_url: str) -> ThreadResponse:
+    """
+    Pass the thread to the agent for processing.
+    """
+    logger.info(f"Passing thread {id} to agent for processing.")
+
     # Run the agent with the thread
-    await agent_run(thread)
+    try:
+        await agent_run(thread)
+    except Exception as e:
+        logger.error(f"Error running agent for thread {id}: {e}")
+        raise HTTPException(status_code=500, detail="Agent processing failed")
 
     # Get the last event
     last_event = thread.events[-1] if thread.events else None
@@ -68,36 +132,14 @@ async def create_thread(request: MessageRequest):
             status_code=500, detail=f"Unexpected event type: {last_event.type}"
         )
 
-    # Format events for response
-    events_data = []
-    for event in thread.events:
-        event_data = {"type": event.type.value, "data": event.data}
-        if event.type == ET.SYSTEM_RESPONSE:
-            event_data["intent"] = event.data.intent
-            event_data["message"] = event.data.message
-        events_data.append(event_data)
-
     # Return the response
     return ThreadResponse(
-        events=events_data,
-        last_message=last_event.data.message
-        if last_event.type == ET.SYSTEM_RESPONSE
-        else None,
-        intent=last_event.data.intent
-        if last_event.type == ET.SYSTEM_RESPONSE
-        else None,
+        thread_id=id,
+        thread=thread,
+        message=last_event.data.message if last_event.data else None,
+        intent=last_event.data.intent if last_event.data else None,
+        response_url=response_url,
     )
-
-
-@app.get("/thread/{thread_id}", response_model=ThreadResponse)
-async def get_thread(thread_id: str):
-    """
-    Get the status of a thread by ID.
-    Note: This is a placeholder implementation.
-    """
-    # This would typically retrieve the thread from a database
-    logger.info(f"Retrieving thread with ID: {thread_id}")
-    raise HTTPException(status_code=404, detail="Not implemented yet")
 
 
 if __name__ == "__main__":
