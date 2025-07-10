@@ -1,5 +1,3 @@
-from .either import Either
+from .either import Either, Right, Left
 
-__all__ = [
-    "Either",
-]
+__all__ = ["Either", "Right", "Left"]

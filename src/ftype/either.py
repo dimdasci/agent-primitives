@@ -14,6 +14,8 @@ class Either(Generic[T, E]):
 class Left(Either[Any, E]):
     """Represents a failure or error in the Either type."""
 
+    __match_args__ = ("error",)
+
     def __init__(self, error: E):
         self.error = error
 
@@ -29,6 +31,8 @@ class Left(Either[Any, E]):
 
 class Right(Either[T, Any]):
     """Represents a successful value in the Either type."""
+
+    __match_args__ = ("value",)
 
     def __init__(self, value: T):
         self.value = value
