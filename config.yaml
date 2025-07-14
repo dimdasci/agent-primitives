@@ -17,9 +17,9 @@ anthropic:
   temperature: 0.0
   max_tokens: 1000
 
-# Ollama driver configuration (placeholder for future implementation)
+# Ollama driver configuration
 ollama:
-  model: llama3
+  model: mistral-nemo:12b
   temperature: 0.0
   max_tokens: 1000
 

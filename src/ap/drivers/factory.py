@@ -9,7 +9,7 @@ from collections.abc import Awaitable, Callable
 from src.ap import actions
 from src.ap.config import Config
 from src.ap.context import Context
-from src.ap.drivers import anthropic, openai
+from src.ap.drivers import anthropic, ollama, openai
 from src.ap.either import Either
 from src.ap.thread import Thread
 
@@ -21,8 +21,8 @@ StepFunction = Callable[[Context, Thread], Awaitable[Either[actions.Action, str]
 DRIVERS: dict[str, StepFunction] = {
     "openai": openai.step,
     "anthropic": anthropic.step,
+    "ollama": ollama.step,
     # Add more drivers as they are implemented:
-    # "ollama": ollama.step,
     # "openai_langchain": openai_langchain.step,
 }
 
