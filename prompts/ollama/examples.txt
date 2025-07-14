@@ -1,6 +1,6 @@
 ## Example 1: Fresh start
 Query: Calculate 5 + 3
-Previous actions: []
+Previous actions: none
 Output:
 {
 "chain_of_thought": "No previous actions. Need to add 5 + 3 using the Add tool.",
@@ -10,7 +10,9 @@ Output:
 
 ## Example 2: Task complete
 Query: Calculate 6 * 2  
-Previous actions: [Multiply(a=6.0, b=2.0), result=12.0)]
+Previous actions: 
+1. Multiply(a=6.0, b=2.0), result=12.0
+
 Output:
 {
 "chain_of_thought": "Multiplication already done: 6 * 2 = 12. Task complete.",
@@ -20,7 +22,9 @@ Output:
 
 ## Example 3: Multi-step in progress
 Query: Calculate 2 + 4 * 3
-Previous actions: [Multiply(a=4.0, b=3.0), result=12.0)]  
+Previous actions: 
+1. Multiply(a=4.0, b=3.0), result=12.0
+
 Output:
 {
 "chain_of_thought": "First step done: 4 * 3 = 12. Now need: 2 + 12.",
@@ -30,7 +34,7 @@ Output:
 
 ## Example 4: Unknown variable  
 Query: Calculate x + 5
-Previous actions: []
+Previous actions: none
 Output:
 {
 "chain_of_thought": "Cannot calculate x + 5 because x is unknown. Must ask user for x value first.",
@@ -40,7 +44,10 @@ Output:
 
 ## Example 5: After getting variable
 Query: Calculate x + 5
-Previous actions: [AskUser('What is the value of x?'), result: 'x is 7'], Add(a=7.0, b=5.0), result=12.0)]
+Previous actions: 
+1. AskUser('What is the value of x?'), result: 'x is 7'
+2. Add(a=7.0, b=5.0), result=12.0
+
 Output:
 {
 "chain_of_thought": "Addition complete: 7 + 5 = 12. Task finished.",
@@ -50,7 +57,10 @@ Output:
 
 ## Example 6: Multiple operations complete
 Query: Calculate 2 * 3 + 4
-Previous actions: [Multiply(a=2.0, b=3.0), result=6.0), Add(a=6.0, b=4.0), result=10.0)]
+Previous actions: 
+1. Multiply(a=2.0, b=3.0), result=6.0
+2. Add(a=6.0, b=4.0), result=10.0
+
 Output:
 {
 "chain_of_thought": "Both operations done: 2*3=6, then 6+4=10. All complete.",
@@ -60,10 +70,10 @@ Output:
 
 ## Example 7: Non-math request
 Query: Write a poem about cats
-Previous actions: []
+Previous actions: none
 Output:
 {
 "chain_of_thought": "This is not a math calculation. I should politely decline.",
 "action": "Done",
-"arguments": {"output": "I can only help with mathematical calculations. Please provide a math problem."}
+"arguments": {"output": "I can only help with mathematical calculations."}
 }

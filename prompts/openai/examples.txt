@@ -1,64 +1,79 @@
-### Example 1:  
-Input:  
-User query: Calculate 5 + 8 / 2  
-Thread: []  
-Output:  
+## Example 1: Fresh start
+Query: Calculate 5 + 3
+Previous actions: none
+Output:
 {
-"chain_of_thought": "I need to calculate 5 + 8 / 2. Following order of operations, I should do division first (8 / 2), then addition. The values 8 and 2 are known, so I can start with the division.",
-"action": "Divide",
-"arguments": {"a": 8, "b": 2}
+"chain_of_thought": "No previous actions. Need to add 5 + 3 using the Add tool.",
+"action": "Add", 
+"arguments": {"a": 5, "b": 3}
 }
 
-Thread: [{"action":"Divide(8,2), result:4"}]
-Output:  
+## Example 2: Task complete
+Query: Calculate 6 * 2  
+Previous actions: 
+1. Multiply(a=6.0, b=2.0), result=12.0
+
+Output:
 {
-"chain_of_thought": "Now I have the result of 8 / 2 = 4. I can proceed with the addition: 5 + 4. Both values are known (5 from the original query, 4 from the previous calculation).",
+"chain_of_thought": "Multiplication already done: 6 * 2 = 12. Task complete.",
+"action": "Done",
+"arguments": {"output": 12}
+}
+
+## Example 3: Multi-step in progress
+Query: Calculate 2 + 4 * 3
+Previous actions: 
+1. Multiply(a=4.0, b=3.0), result=12.0
+
+Output:
+{
+"chain_of_thought": "First step done: 4 * 3 = 12. Now need: 2 + 12.",
 "action": "Add",
-"arguments": {"a": 5, "b": 4}
+"arguments": {"a": 2, "b": 12}
 }
 
-Thread: [{"action":"Divide(8,2), result:4"},{"action":"Add(5,4), result:9"}]  
-Output:  
+## Example 4: Unknown variable  
+Query: Calculate x + 5
+Previous actions: none
+Output:
 {
-"chain_of_thought": "I have completed both operations: division (8/2=4) and addition (5+4=9). The final result is 9, so I can mark the task as done.",
+"chain_of_thought": "Cannot calculate x + 5 because x is unknown. Must ask user for x value first.",
+"action": "AskUser", 
+"arguments": {"request": "What is the value of x?"}
+}
+
+## Example 5: After getting variable
+Query: Calculate x + 5
+Previous actions: 
+1. AskUser('What is the value of x?'), result: 'x is 7'
+2. Add(a=7.0, b=5.0), result=12.0
+
+Output:
+{
+"chain_of_thought": "Addition complete: 7 + 5 = 12. Task finished.",
 "action": "Done",
-"arguments": {"output": 9}
+"arguments": {"output": 12}
 }
 
-### Example 2:  
-Input:  
-User query: Calculate a × 5 (a unknown)  
-Thread: []  
-Output:  
+## Example 6: Multiple operations complete
+Query: Calculate 2 * 3 + 4
+Previous actions: 
+1. Multiply(a=2.0, b=3.0), result=6.0
+2. Add(a=6.0, b=4.0), result=10.0
+
+Output:
 {
-"chain_of_thought": "I need to calculate a × 5, but the value of 'a' is unknown. I cannot proceed with the calculation until I know what 'a' is. I should ask the user for this missing information.",
-"action": "AskUser",
-"arguments": {"request": "What is the value of a?"}
+"chain_of_thought": "Both operations done: 2*3=6, then 6+4=10. All complete.",
+"action": "Done", 
+"arguments": {"output": 10}
 }
 
-Thread: [{"action":"AskUser('What is the value of a?'), result: 'a is 3'"}]  
-Output:  
+## Example 7: Non-math request
+Query: Write a poem about cats
+Previous actions: none
+Output:
 {
-"chain_of_thought": "The user provided that a = 3. Now I can calculate a × 5 = 3 × 5. Both values are known, so I can proceed with the multiplication.",
-"action": "Multiply",
-"arguments": {"a": 3, "b": 5}
-}
-
-Thread: [{"action":"AskUser('What is the value of a?'), result: 'a is 3'"},{"action":"Multiply(3,5), result: 15"}]  
-Output:  
-{
-"chain_of_thought": "I have successfully calculated 3 × 5 = 15. The task is complete with the final result of 15.",
+"chain_of_thought": "This is not a math calculation. I should politely decline.",
 "action": "Done",
-"arguments": {"output": 15}
-}
-
-### Example 3 (non-math task):  
-Input:  
-User query: Write a poem about the sea  
-Thread: []  
-Output:  
-{
-"chain_of_thought": "The user is asking me to write a poem about the sea, which is not a mathematical calculation task. According to my instructions, I should politely decline non-math requests and explain that I can only help with mathematical problems.",
-"action": "Done",
-"arguments": {"output": "I'm sorry, but I can only assist with mathematical calculation tasks. Please provide a math problem if you'd like help solving it."}
+"arguments": {"output": "I can only help with mathematical calculations."}
 }
