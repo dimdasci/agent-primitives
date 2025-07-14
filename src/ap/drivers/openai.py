@@ -127,6 +127,8 @@ def parse_completion(ctx: Context, completion: Any) -> Either[dict[str, Any], st
         if not content:
             return Left("No content in completion message")
 
+        # replace \n with space to handle multiline JSON
+        content = content.replace("\n", " ")
         json_obj = json.loads(content)
         ctx.logger.info(f"Received action: {json_obj}")
         return Right(json_obj)

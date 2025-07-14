@@ -141,7 +141,9 @@ def parse_completion(
             )
             if json_match:
                 try:
-                    json_obj = json.loads(json_match.group(1))
+                    # replace \n with space to handle multiline JSON
+                    content = json_match.group(1).replace("\n", " ")                    
+                    json_obj = json.loads(content)
                     ctx.logger.info(
                         f"Extracted JSON action from Ollama: {json_obj}"
                     )

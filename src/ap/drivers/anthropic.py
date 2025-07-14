@@ -115,6 +115,8 @@ def parse_completion(ctx: Context, completion: Message) -> Either[dict[str, Any]
                 content = content_block.text
                 if content:
                     try:
+                        # replace \n with space to handle multiline JSON
+                        content = content.replace("\n", " ")
                         # Try to parse as JSON
                         json_obj = json.loads(content)
                         ctx.logger.info(f"Received action from Anthropic: {json_obj}")
