@@ -49,7 +49,7 @@ class Add(Action):
         return self.a + self.b
 
     def __str__(self) -> str:
-        return f"Add(a={self.a}, b={self.b}), result={self.result})"
+        return f"Add(a={self.a}, b={self.b}), result={self.result}"
 
     @classmethod
     def usage(cls) -> str:
@@ -64,7 +64,7 @@ class Subtract(Action):
         return self.a - self.b
 
     def __str__(self) -> str:
-        return f"Subtract(a={self.a}, b={self.b}), result={self.result})"
+        return f"Subtract(a={self.a}, b={self.b}), result={self.result}"
 
     @classmethod
     def usage(cls) -> str:
@@ -79,7 +79,7 @@ class Multiply(Action):
         return self.a * self.b
 
     def __str__(self) -> str:
-        return f"Multiply(a={self.a}, b={self.b}), result={self.result})"
+        return f"Multiply(a={self.a}, b={self.b}), result={self.result}"
 
     @classmethod
     def usage(cls) -> str:
@@ -96,7 +96,7 @@ class Divide(Action):
         return self.a / self.b
 
     def __str__(self) -> str:
-        return f"Divide(a={self.a}, b={self.b}), result={self.result})"
+        return f"Divide(a={self.a}, b={self.b}), result={self.result}"
 
     @classmethod
     def usage(cls) -> str:
@@ -113,7 +113,7 @@ class AskUser(Action):
         return kwargs["io"].prompt(self.request)
 
     def __str__(self) -> str:
-        return f"RequestUserInput(request={self.request}), result={self.result})"
+        return f"RequestUserInput(request={self.request}), result={self.result}"
 
     @classmethod
     def usage(cls) -> str:
