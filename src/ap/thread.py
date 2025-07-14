@@ -49,7 +49,7 @@ class Thread(BaseModel):
 
     def __str__(self) -> str:
         if not self.actions:
-            return f"none."
+            return "none."
         
         return "\n" + "\n".join(
             f"{i + 1}. {action}" for i, action in enumerate(self.actions)

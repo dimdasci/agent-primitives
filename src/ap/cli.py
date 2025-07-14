@@ -19,6 +19,7 @@ from src.ap.agent import go
 from src.ap.config import Config
 from src.ap.context import Context
 from src.ap.either import Either
+from src.ap.eval import run_evaluation
 from src.ap.inmemory import ThreadInMemoryStore
 from src.ap.thread import Thread
 
@@ -128,8 +129,53 @@ def _handle_success(action: Actions, thread: Thread) -> int:
     return 0
 
 
+app = typer.Typer()
+
+
+@app.command()
+def evaluate(
+    dataset_path: str = typer.Argument(
+        ..., help="Path to evaluation dataset YAML file"
+    ),
+    driver: str = typer.Option(
+        "openai",
+        "--driver",
+        "-d",
+        help="LLM driver to use (openai, anthropic, ollama, etc.)",
+    ),
+    report_dir: str = typer.Option(
+        ".",
+        "--report-dir",
+        "-r",
+        help="Directory to save evaluation reports",
+    ),
+    thread_dir: str = typer.Option(
+        "eval_threads",
+        "--thread-dir",
+        "-t",
+        help="Directory to save thread details for debugging",
+    ),
+) -> int:
+    """Run evaluation on a dataset."""
+    return run_evaluation(dataset_path, driver, report_dir, thread_dir)
+
+
+@app.command()
+def process_task(
+    task: str = typer.Argument(..., help="Task to process"),
+    driver: str = typer.Option(
+        "openai",
+        "--driver",
+        "-d",
+        help="LLM driver to use (openai, anthropic, ollama, etc.)",
+    ),
+) -> int:
+    """Process a task using the agent-based system."""
+    return process(task, driver)
+
+
 if __name__ == "__main__":
     load_dotenv()
     # Initialize Config to load the configuration file
     Config()
-    typer.run(process)
+    app()

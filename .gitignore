@@ -31,3 +31,6 @@ logs/
 
 # MacOS specific files
 .DS_Store
+
+# Evals
+eval_threads/

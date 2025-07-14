@@ -25,3 +25,8 @@ tests:
 	uv run python -m pytest tests -v
 
 .PHONY: tests
+
+# Evaluation
+eval_simple:
+	@echo "🧪 Running simple evaluation..."
+	uv run python -m src.ap.cli evaluate evals/simple_tasks.yaml -d $(driver) -r eval_reports -t eval_threads
