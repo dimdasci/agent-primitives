@@ -1,6 +1,5 @@
 """Conversation thread management for actions in a task processing system."""
 
-from textwrap import dedent
 from typing import Any
 from uuid import uuid4
 
@@ -49,11 +48,9 @@ class Thread(BaseModel):
         return Left("No actions in thread.")
 
     def __str__(self) -> str:
-        return (
-            dedent("""
-            User query: {q}  
-            Thread: [{t}]
-        """)
-            .format(q=self.query, t=", ".join(str(action) for action in self.actions))
-            .strip()
+        if not self.actions:
+            return f"none."
+        
+        return "\n" + "\n".join(
+            f"{i + 1}. {action}" for i, action in enumerate(self.actions)
         )
