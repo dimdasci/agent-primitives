@@ -1,0 +1,8 @@
+User query: $query
+
+Current thread:
+[$thread]
+
+Reason step-by-step about what information is known, what is needed to progress, and which operation logically follows. Ask user for missing values of all variables before do calculations.
+
+What is the next action?

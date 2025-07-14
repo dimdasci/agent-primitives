@@ -7,7 +7,6 @@ the next action to take based on the current thread state.
 import json
 from typing import Any
 
-from langfuse.model import PromptClient
 from openai.types.chat import (
     ChatCompletionMessageParam,
 )
@@ -22,9 +21,6 @@ from src.ap.thread import Thread
 ACTIONS_FULL = actions.get_action_usage()
 ACTIONS_SHORT = actions.get_action_names()
 
-# Load examples for few-shot learning
-EXAMPLES = Config.get_examples()
-
 
 async def step(ctx: Context, thread: Thread) -> Either[actions.Action, str]:
     """Determine the next action to execute based on the thread state.
@@ -38,27 +34,27 @@ async def step(ctx: Context, thread: Thread) -> Either[actions.Action, str]:
     """
     ctx.logger.info(f"Determining next action for thread: {thread.id}")
 
-    # Get the prompt for the LLM
-    prompt, compiled_prompt = get_dev_prompt(ctx)
+    # Get the prompts for the LLM
+    system_prompt, user_prompt = get_prompts(thread)
 
     # Prepare messages for the LLM
-    messages = prepare_messages(compiled_prompt, thread)
+    messages = prepare_messages(system_prompt, user_prompt)
 
     # Chain operations using flat_map
-    completion_result = await get_completion(ctx, messages, prompt)
+    completion_result = await get_completion(ctx, messages)
     return completion_result.flat_map(
         lambda completion: parse_completion(ctx, completion)
     ).flat_map(lambda response_object: convert_to_action(ctx, response_object))
 
 
 def prepare_messages(
-    compiled_prompt: str, thread: Thread
+    system_prompt: str, user_prompt: str
 ) -> list[ChatCompletionMessageParam]:
     """Prepare the messages for the LLM.
 
     Args:
-        compiled_prompt: The compiled system prompt
-        thread: The current thread with query and history
+        system_prompt: The system/developer prompt
+        user_prompt: The user prompt
 
     Returns:
         List of messages for the LLM
@@ -66,24 +62,23 @@ def prepare_messages(
     return [
         {
             "role": "developer",
-            "content": compiled_prompt,
+            "content": system_prompt,
         },
         {
             "role": "user",
-            "content": str(thread),
+            "content": user_prompt,
         },
     ]
 
 
 async def get_completion(
-    ctx: Context, messages: list[ChatCompletionMessageParam], prompt: PromptClient
+    ctx: Context, messages: list[ChatCompletionMessageParam]
 ) -> Either[Any, str]:
     """Get a completion from the OpenAI API.
 
     Args:
         ctx: Application context with client, logger, etc.
         messages: Messages to send to the LLM
-        prompt: The prompt client for tracking
 
     Returns:
         Either the completion object (Right) or an error message (Left)
@@ -91,7 +86,7 @@ async def get_completion(
     try:
         model = Config.get("model")
         with ctx.langfuse.start_as_current_generation(
-            name=__name__, model=model, input=messages, prompt=prompt
+            name=__name__, model=model, input=messages
         ) as generation:
             completion = await ctx.client.chat.completions.create(
                 model=model,
@@ -169,20 +164,25 @@ def convert_to_action(
         return Left(f"Error converting to action: {str(e)}")
 
 
-def get_dev_prompt(ctx: Context) -> tuple[PromptClient, str]:
-    """Get the developer prompt used for the OpenAI function.
+def get_prompts(thread: Thread) -> tuple[str, str]:
+    """Get the system and user prompts for OpenAI.
 
     Args:
-        ctx: Application context with langfuse client
+        thread: The current thread with query and history
 
     Returns:
-        Tuple of (PromptClient, compiled_prompt_string)
+        Tuple of (system_prompt, user_prompt)
     """
-    dev_prompt_id = Config.get("dev_prompt_id")
-    prompt = ctx.langfuse.get_prompt(dev_prompt_id, label="latest")
-    compiled = prompt.compile(
+    examples = Config.get_prompt("openai", "examples")
+    system_prompt = Config.get_prompt(
+        "openai", "system",
         actions_full=ACTIONS_FULL,
         actions_short=ACTIONS_SHORT,
-        examples=EXAMPLES,
+        examples=examples,
     )
-    return prompt, compiled
+    user_prompt = Config.get_prompt(
+        "openai", "user",
+        query=thread.query,
+        thread=", ".join([str(action) for action in thread.actions]),
+    )
+    return system_prompt, user_prompt

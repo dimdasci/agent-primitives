@@ -19,9 +19,6 @@ from src.ap.thread import Thread
 ACTIONS_FULL = actions.get_action_usage()
 ACTIONS_SHORT = actions.get_action_names()
 
-# Load examples for few-shot learning
-EXAMPLES = Config.get_examples()
-
 
 async def step(ctx: Context, thread: Thread) -> Either[actions.Action, str]:
     """Determine the next action to execute based on the thread state.
@@ -35,11 +32,11 @@ async def step(ctx: Context, thread: Thread) -> Either[actions.Action, str]:
     """
     ctx.logger.info(f"Determining next action for thread: {thread.id} using Ollama")
 
-    # Get the system prompt
-    system_prompt = get_system_prompt()
+    # Get the prompts for the LLM
+    system_prompt, user_prompt = get_prompts(thread)
 
     # Prepare messages for the LLM
-    messages = prepare_messages(system_prompt, thread)
+    messages = prepare_messages(system_prompt, user_prompt)
 
     # Chain operations using flat_map
     completion_result = await get_completion(ctx, messages)
@@ -48,19 +45,19 @@ async def step(ctx: Context, thread: Thread) -> Either[actions.Action, str]:
     ).flat_map(lambda response_object: convert_to_action(ctx, response_object))
 
 
-def prepare_messages(system_prompt: str, thread: Thread) -> list[dict[str, str]]:
+def prepare_messages(system_prompt: str, user_prompt: str) -> list[dict[str, str]]:
     """Prepare the messages for the Ollama API.
 
     Args:
         system_prompt: The system prompt
-        thread: The current thread with query and history
+        user_prompt: The user prompt
 
     Returns:
         List of messages for the LLM
     """
     return [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": str(thread)},
+        {"role": "user", "content": user_prompt},
     ]
 
 
@@ -188,26 +185,23 @@ def convert_to_action(
         return Left(f"Error converting to action: {str(e)}")
 
 
-def get_system_prompt() -> str:
-    """Get the system prompt for the Ollama model.
+def get_prompts(thread: Thread) -> tuple[str, str]:
+    """Get the system and user prompts for Ollama.
+
+    Args:
+        thread: The current thread with query and history
 
     Returns:
-        The system prompt string
+        Tuple of (system_prompt, user_prompt)
     """
-    return f"""You are an AI assistant that helps users solve mathematical problems 
-step by step.
-
-AVAILABLE ACTIONS
-{ACTIONS_FULL}
-
-OUTPUT FORMAT
-You must respond with a JSON object that contains an "action" field and an 
-"arguments" field.
-The "action" field must be one of: {ACTIONS_SHORT}.
-The "arguments" field must be an object containing the arguments for the action.
-
-EXAMPLES
-{EXAMPLES}
-
-Make sure your response can be parsed as valid JSON.
-"""
+    examples = Config.get_prompt("ollama", "examples")
+    system_prompt = Config.get_prompt("ollama", "system")
+    user_prompt = Config.get_prompt(
+        "ollama", "user",
+        actions_full=ACTIONS_FULL,
+        actions_short=ACTIONS_SHORT,
+        examples=examples,
+        query=thread.query,
+        thread=", ".join([str(action) for action in thread.actions]),
+    )
+    return system_prompt, user_prompt

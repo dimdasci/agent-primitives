@@ -20,9 +20,6 @@ from src.ap.thread import Thread
 ACTIONS_FULL = actions.get_action_usage()
 ACTIONS_SHORT = actions.get_action_names()
 
-# Load examples for few-shot learning
-EXAMPLES = Config.get_examples()
-
 
 async def step(ctx: Context, thread: Thread) -> Either[actions.Action, str]:
     """Determine the next action to execute based on the thread state.
@@ -36,40 +33,40 @@ async def step(ctx: Context, thread: Thread) -> Either[actions.Action, str]:
     """
     ctx.logger.info(f"Determining next action for thread: {thread.id} using Anthropic")
 
-    # Get the system prompt
-    system_prompt = get_system_prompt()
+    # Get the prompts for the LLM
+    system_prompt, user_prompt = get_prompts(thread)
 
     # Prepare messages for the LLM
-    messages = prepare_messages(system_prompt, thread)
+    messages = prepare_messages(user_prompt)
 
     # Chain operations using flat_map
-    completion_result = await get_completion(ctx, messages)
+    completion_result = await get_completion(ctx, messages, system_prompt)
     return completion_result.flat_map(
         lambda completion: parse_completion(ctx, completion)
     ).flat_map(lambda response_object: convert_to_action(ctx, response_object))
 
 
-def prepare_messages(system_prompt: str, thread: Thread) -> list[MessageParam]:
+def prepare_messages(user_prompt: str) -> list[MessageParam]:
     """Prepare the messages for the Anthropic API.
 
     Args:
-        system_prompt: The system prompt
-        thread: The current thread with query and history
+        user_prompt: The user prompt
 
     Returns:
         List of messages for the LLM
     """
-    return [{"role": "user", "content": str(thread)}]
+    return [{"role": "user", "content": user_prompt}]
 
 
 async def get_completion(
-    ctx: Context, messages: list[MessageParam]
+    ctx: Context, messages: list[MessageParam], system_prompt: str
 ) -> Either[Message, str]:
     """Get a completion from the Anthropic API.
 
     Args:
         ctx: Application context with logger
         messages: Messages to send to the LLM
+        system_prompt: The system prompt
 
     Returns:
         Either the completion message (Right) or an error message (Left)
@@ -79,16 +76,17 @@ async def get_completion(
         anthropic_client = AsyncAnthropic()
 
         model = Config.get("model")
-        system = get_system_prompt()
 
         with ctx.langfuse.start_as_current_generation(
-            name=__name__, model=model, input={"messages": messages, "system": system}
+            name=__name__, 
+            model=model, 
+            input={"messages": messages, "system": system_prompt}
         ) as generation:
             completion = await anthropic_client.messages.create(
                 model=model,
                 max_tokens=Config.get("max_tokens", 1000),
                 temperature=Config.get("temperature", 0.0),
-                system=system,
+                system=system_prompt,
                 messages=messages,
             )
             generation.update(output=completion)
@@ -175,26 +173,23 @@ def convert_to_action(
         return Left(f"Error converting to action: {str(e)}")
 
 
-def get_system_prompt() -> str:
-    """Get the system prompt for the Anthropic model.
+def get_prompts(thread: Thread) -> tuple[str, str]:
+    """Get the system and user prompts for Anthropic.
+
+    Args:
+        thread: The current thread with query and history
 
     Returns:
-        The system prompt string
+        Tuple of (system_prompt, user_prompt)
     """
-    return f"""You are an AI assistant that helps users solve mathematical problems 
-step by step.
-
-AVAILABLE ACTIONS
-{ACTIONS_FULL}
-
-OUTPUT FORMAT
-You must respond with a JSON object that contains an "action" field and an 
-"arguments" field.
-The "action" field must be one of: {ACTIONS_SHORT}.
-The "arguments" field must be an object containing the arguments for the action.
-
-EXAMPLES
-{EXAMPLES}
-
-Make sure your response can be parsed as valid JSON.
-"""
+    examples = Config.get_prompt("anthropic", "examples")
+    system_prompt = Config.get_prompt("anthropic", "system")
+    user_prompt = Config.get_prompt(
+        "anthropic", "user",
+        actions_full=ACTIONS_FULL,
+        actions_short=ACTIONS_SHORT,
+        examples=examples,
+        query=thread.query,
+        thread=", ".join([str(action) for action in thread.actions]),
+    )
+    return system_prompt, user_prompt

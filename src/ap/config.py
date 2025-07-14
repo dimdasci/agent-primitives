@@ -6,6 +6,7 @@ of which driver to use.
 """
 
 import os
+from string import Template
 from typing import Any
 
 import yaml
@@ -91,16 +92,6 @@ class Config:
 
         return default
 
-    @classmethod
-    def get_examples(cls) -> str:
-        """Load examples for few-shot learning.
-
-        Returns:
-            The content of the examples file
-        """
-        path = cls.get("examples_path", "src/ap/examples.txt")
-        with open(path) as f:
-            return (f.read() or "").strip()
 
     @classmethod
     def get_available_drivers(cls) -> list[str]:
@@ -110,3 +101,30 @@ class Config:
             List of driver names, excluding the "default" section
         """
         return [name for name in cls._config.keys() if name != "default"]
+
+    @classmethod
+    def get_prompt(cls, driver_name: str, prompt_type: str, **kwargs: Any) -> str:
+        """Load and format a prompt template for a specific driver.
+
+        Args:
+            driver_name: The name of the driver (e.g., "openai", "anthropic")
+            prompt_type: The type of prompt ("system", "user", "examples")
+            **kwargs: Variables to substitute in the prompt template
+
+        Returns:
+            The formatted prompt string
+        """
+        prompt_path = f"prompts/{driver_name}/{prompt_type}.txt"
+        try:
+            with open(prompt_path) as f:
+                template = f.read().strip()
+            
+            # Examples files don't need templating, return as-is
+            if prompt_type == "examples":
+                return template
+            
+            # Use Template instead of format to avoid brace conflicts
+            template_obj = Template(template)
+            return template_obj.safe_substitute(**kwargs)
+        except Exception as e:
+            raise ValueError(f"Error loading prompt {prompt_path}: {e}") from e

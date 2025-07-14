@@ -1,0 +1,57 @@
+### Example 1:  
+Input:  
+User query: Calculate 5 + 8 / 2  
+Thread: []  
+Your output:  
+{
+"action": "Divide",
+"arguments": {"a": 8, "b": 2}
+}
+
+Thread: [{"action":"Divide(8,2), result:4"}]
+Your output:  
+{
+"action": "Add",
+"arguments": {"a": 5, "b": 4}
+}
+
+Thread: [{"action":"Divide(8,2), result:4"},{"action":"Add(5,4), result:9"}]  
+Your output:  
+{
+"action": "Done",
+"arguments": {"output": 9}
+}
+
+### Example 2:  
+Input:  
+User query: Calculate a × 5 (a unknown)  
+Thread: []  
+Your output:  
+{
+"action": "AskUser",
+"arguments": {"request": "What is the value of a?"}
+}
+
+Thread: [{"action":"AskUser('What is the value of a?'), result: 'a is 3'"}]  
+Your output:  
+{
+"action": "Multiply",
+"arguments": {"a": 3, "b": 5}
+}
+
+Thread: [{"action":"AskUser('What is the value of a?'), result: 'a is 3'"},{"action":"Multiply(3,5), result: 15"}]  
+Your output:  
+{
+"action": "Done",
+"arguments": {"output": 15}
+}
+
+### Example 3 (non-math task):  
+Input:  
+User query: Write a poem about the sea  
+Thread: []  
+Your output:  
+{
+"action": "Done",
+"arguments": {"output": "I'm sorry, but I can only assist with mathematical calculation tasks. Please provide a math problem if you'd like help solving it."}
+}
