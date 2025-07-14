@@ -1,0 +1,40 @@
+- id: multi_001
+  prompt: "Calculate (10 + 5) * 2."
+  expected_answer: 30
+  expected_steps:
+    - "Add(a=10, b=5)"
+    - "Multiply(a=15, b=2)"
+    - "Done(output=30)"
+
+- id: multi_002
+  prompt: "Calculate (100 / 10) - 3."
+  expected_answer: 7
+  expected_steps:
+    - "Divide(a=100, b=10)"
+    - "Subtract(a=10, b=3)"
+    - "Done(output=7)"
+
+- id: multi_003
+  prompt: "What is 5 multiplied by 6, plus 10?"
+  expected_answer: 40
+  expected_steps:
+    - "Multiply(a=5, b=6)"
+    - "Add(a=30, b=10)"
+    - "Done(output=40)"
+
+- id: multi_004
+  prompt: "Divide 50 by 5, then subtract 2."
+  expected_answer: 8
+  expected_steps:
+    - "Divide(a=50, b=5)"
+    - "Subtract(a=10, b=2)"
+    - "Done(output=8)"
+
+- id: multi_005
+  prompt: "Calculate (2 + 3) * (8 - 4)."
+  expected_answer: 20
+  expected_steps:
+    - "Add(a=2, b=3)"
+    - "Subtract(a=8, b=4)"
+    - "Multiply(a=5, b=4)"
+    - "Done(output=20)"
