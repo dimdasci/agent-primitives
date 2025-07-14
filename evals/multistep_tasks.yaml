@@ -38,3 +38,51 @@
     - "Subtract(a=8, b=4)"
     - "Multiply(a=5, b=4)"
     - "Done(output=20)"
+
+- id: multi_006
+  prompt: "What is 256 + 3 * 18 - 47 / 7."
+  expected_answer: 303.28571429
+  expected_steps:
+    - "Multiply(a=3, b=18)"
+    - "Add(a=256, b=54)"
+    - "Divide(a=47, b=7)"
+    - "Subtract(a=310, b=6.71428571)"
+    - "Done(output=303.28571429)"
+
+- id: multi_007
+  prompt: "A store has 145 apples. They sell 37 apples in the morning, then receive a shipment of 86 more apples. How many apples does the store have now?"
+  expected_answer: 194
+  expected_steps:
+    - "Subtract(a=145, b=37)"
+    - "Add(a=108, b=86)"
+    - "Done(output=194)"
+
+- id: multi_008
+  prompt: "A carpenter has a board that is 243 centimeters long. They cut off 28 centimeters, then divide the remaining board into 5 equal pieces. How long is each piece?"
+  expected_answer: 43
+  expected_steps:
+    - "Subtract(a=243, b=28)"
+    - "Divide(a=215, b=5)"
+    - "Done(output=43)"
+
+- id: multi_009
+  prompt: "A factory produces 1250 widgets per day. If they increase production by 15%, then run the factory for 6 days, how many widgets will they produce in total?"
+  expected_answer: 8625
+  expected_steps:
+    - "Multiply(a=1250, b=0.15)"
+    - "Add(a=1250, b=187.5)"
+    - "Multiply(a=1437.5, b=6)"
+    - "Done(output=8625)"
+
+- id: multi_010
+  prompt: "A library has 3 bookshelves. The first shelf has 127 books, the second has 83 books, and the third has books too. If 56 books are checked out, how many books remain in the library?"
+  user_input: "the third has 94 books"
+  expected_answer: 248
+  expected_steps:
+    - "AskUser(request='What is the current exchange rate from USD to EUR?')"
+    - "Add(a=127, b=83)"
+    - "Add(a=210, b=94)"
+    - "Subtract(a=304, b=56)"
+    - "Done(output=248)"
+
+

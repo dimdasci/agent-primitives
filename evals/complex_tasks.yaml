@@ -18,3 +18,17 @@
     - "Divide(a=50.0, b=0.2)"
     - "Divide(a=250.0, b=0.9)"
     - "Done(output=277.77777777777777)"
+
+- id: complex_003
+  prompt: "Calculate expression: (350 + x) / (418 - y) + 69"
+  user_input: 
+  - "x is 15"
+  - "and y is 186"
+  expected_answer: 133.0
+  expected_steps:
+    - "AskUser(request='What is the value of x?')"
+    - "AskUser(request='What is the value of y?')"    
+    - "Add(a=350.0, b=15)"
+    - "Subtract(a=418.0, b=186)"
+    - "Divide(a=365.0, b=232.0)"    
+    - "Done(output=133.0)"
