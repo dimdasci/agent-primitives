@@ -26,6 +26,7 @@ baml-session.md
 
 # Log files
 log/
+logs/
 *.log
 
 # MacOS specific files
