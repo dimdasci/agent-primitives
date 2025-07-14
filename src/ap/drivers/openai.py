@@ -183,6 +183,6 @@ def get_prompts(thread: Thread) -> tuple[str, str]:
     user_prompt = Config.get_prompt(
         "openai", "user",
         query=thread.query,
-        thread=", ".join([str(action) for action in thread.actions]),
+        thread=str(thread),
     )
     return system_prompt, user_prompt

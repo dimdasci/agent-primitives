@@ -202,6 +202,6 @@ def get_prompts(thread: Thread) -> tuple[str, str]:
         actions_short=ACTIONS_SHORT,
         examples=examples,
         query=thread.query,
-        thread=", ".join([str(action) for action in thread.actions]),
+        thread=str(thread),
     )
     return system_prompt, user_prompt
