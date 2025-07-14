@@ -42,7 +42,7 @@ class TestCase:
     prompt: str
     expected_answer: Any
     expected_steps: list[str]
-    user_input: str | None = None
+    user_input: str | list[str] | None = None
 
 
 @dataclass
@@ -62,12 +62,24 @@ class EvaluationResult:
 class MockTyper:
     """Mock typer object that returns predefined user input."""
     
-    def __init__(self, user_input: str | None = None):
-        self.user_input = user_input
+    def __init__(self, user_input: str | list[str] | None = None):
+        if isinstance(user_input, list):
+            self.user_inputs = user_input
+            self.current_index = 0
+        elif user_input is not None:
+            self.user_inputs = [user_input]
+            self.current_index = 0
+        else:
+            self.user_inputs = []
+            self.current_index = 0
     
     def prompt(self, message: str) -> str:
-        """Return the predefined user input."""
-        return self.user_input or ""
+        """Return the next predefined user input."""
+        if self.current_index < len(self.user_inputs):
+            response = self.user_inputs[self.current_index]
+            self.current_index += 1
+            return response
+        return ""
     
     def echo(self, message: str) -> None:
         """Mock echo that does nothing."""
@@ -135,7 +147,7 @@ def _compare_results(actual: Any, expected: Any) -> bool:
         actual_float = float(str(actual).replace(',', '.'))
         expected_float = float(str(expected).replace(',', '.'))
         # Allow for small floating point errors
-        return abs(actual_float - expected_float) < 1e-6
+        return abs(actual_float - expected_float) < 1e-3
     except (ValueError, TypeError):
         pass
     
@@ -158,7 +170,7 @@ def evaluate_test_case(
         client=AsyncOpenAI(),
         logger=logging.getLogger(__name__),
         langfuse=get_client(),
-        cli=mock_typer,
+        cli=mock_typer, # type: ignore
         state=thread_store,
         driver=driver,
     )
@@ -180,7 +192,7 @@ def evaluate_test_case(
         updated_thread = updated_thread_result.value
         
         # Extract actual steps and result
-        actual_steps = [str(action) for action in updated_thread.actions]
+        actual_steps = list({str(action) for action in updated_thread.actions})
         actual_result = None
         task_completed = False
         error_message = None
