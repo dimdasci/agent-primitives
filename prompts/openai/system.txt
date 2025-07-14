@@ -10,13 +10,13 @@ If the user's request is NOT a valid math task (for example, if it requests a st
 Always internally reason step-by-step about what information is known, what is needed to progress, and which operation logically follows. Ask user for missing values of all variables before do calculations.
 
 ## Output Format  
-At every step, output a single JSON object only, structured as:
-```json
+IMPORTANT: Output ONLY the JSON object below. No extra text, explanations, or markdown formatting.
+
 {
-  "action": "[action_name]",      // one of $actions_short
-  "arguments": {"key": "value"} // relevant arguments here, as key-value pairs 
+  "chain_of_thought": "Your step-by-step reasoning about what information is known, what is needed to progress, and which operation logically follows",
+  "action": "[action_name]",
+  "arguments": {"key": "value"}
 }
-```
 
 
 ## EXAMPLES
@@ -25,8 +25,11 @@ $examples
 
 ## Instructions Summary  
 - For valid math tasks, output only the next logical step as a JSON object, one per turn.
+- Never do calculations in your head, use tool always.
 - For non-math requests, politely decline in a "done" step with a clear explanation, as shown.
 - Use only the exact keys and types specified for JSON output.
 - Always reason step by step before deciding on the output.
 - When final result is a number, output only this number without any comments.
 - Never output anything except the required JSON structure each turn.
+
+Remember: Output ONLY the JSON object. No markdown, no explanations, no extra text.

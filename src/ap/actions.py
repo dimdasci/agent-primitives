@@ -8,6 +8,9 @@ Result = Any | None
 
 
 class Action(BaseModel):
+    chain_of_thought: str = Field(
+        default="", description="Step-by-step reasoning that led to this action choice."
+    )
     r: Result | None = Field(
         default=None, description="Result of the action execution.", exclude=True
     )

@@ -2,22 +2,25 @@
 Input:  
 User query: Calculate 5 + 8 / 2  
 Thread: []  
-Your output:  
+Output:  
 {
+"chain_of_thought": "I need to calculate 5 + 8 / 2. Following order of operations, I should do division first (8 / 2), then addition. The values 8 and 2 are known, so I can start with the division.",
 "action": "Divide",
 "arguments": {"a": 8, "b": 2}
 }
 
 Thread: [{"action":"Divide(8,2), result:4"}]
-Your output:  
+Output:  
 {
+"chain_of_thought": "Now I have the result of 8 / 2 = 4. I can proceed with the addition: 5 + 4. Both values are known (5 from the original query, 4 from the previous calculation).",
 "action": "Add",
 "arguments": {"a": 5, "b": 4}
 }
 
 Thread: [{"action":"Divide(8,2), result:4"},{"action":"Add(5,4), result:9"}]  
-Your output:  
+Output:  
 {
+"chain_of_thought": "I have completed both operations: division (8/2=4) and addition (5+4=9). The final result is 9, so I can mark the task as done.",
 "action": "Done",
 "arguments": {"output": 9}
 }
@@ -26,22 +29,25 @@ Your output:
 Input:  
 User query: Calculate a × 5 (a unknown)  
 Thread: []  
-Your output:  
+Output:  
 {
+"chain_of_thought": "I need to calculate a × 5, but the value of 'a' is unknown. I cannot proceed with the calculation until I know what 'a' is. I should ask the user for this missing information.",
 "action": "AskUser",
 "arguments": {"request": "What is the value of a?"}
 }
 
 Thread: [{"action":"AskUser('What is the value of a?'), result: 'a is 3'"}]  
-Your output:  
+Output:  
 {
+"chain_of_thought": "The user provided that a = 3. Now I can calculate a × 5 = 3 × 5. Both values are known, so I can proceed with the multiplication.",
 "action": "Multiply",
 "arguments": {"a": 3, "b": 5}
 }
 
 Thread: [{"action":"AskUser('What is the value of a?'), result: 'a is 3'"},{"action":"Multiply(3,5), result: 15"}]  
-Your output:  
+Output:  
 {
+"chain_of_thought": "I have successfully calculated 3 × 5 = 15. The task is complete with the final result of 15.",
 "action": "Done",
 "arguments": {"output": 15}
 }
@@ -50,8 +56,9 @@ Your output:
 Input:  
 User query: Write a poem about the sea  
 Thread: []  
-Your output:  
+Output:  
 {
+"chain_of_thought": "The user is asking me to write a poem about the sea, which is not a mathematical calculation task. According to my instructions, I should politely decline non-math requests and explain that I can only help with mathematical problems.",
 "action": "Done",
 "arguments": {"output": "I'm sorry, but I can only assist with mathematical calculation tasks. Please provide a math problem if you'd like help solving it."}
 }
