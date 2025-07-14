@@ -10,15 +10,18 @@ format:
 
 typecheck:
 	@echo "🔍 Running mypy type checker..."
-	uv run mypy src/
+	uv run mypy src/ --ignore-missing-imports
 
 fix:
 	@echo "🛠️  Running ruff fix..."
 	uv run ruff check --fix --unsafe-fixes src/
 	uv run ruff format src/
 
-api:
-	@echo "🚀 Starting API server..."
-	uv run uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
-
 .PHONY: lint format typecheck fix api
+
+
+tests:
+	@echo "🧪 Running tests..."
+	uv run python -m pytest tests -v
+
+.PHONY: tests

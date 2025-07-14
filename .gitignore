@@ -27,3 +27,6 @@ baml-session.md
 # Log files
 log/
 *.log
+
+# MacOS specific files
+.DS_Store
