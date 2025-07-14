@@ -30,3 +30,14 @@ tests:
 eval_simple:
 	@echo "🧪 Running simple evaluation..."
 	uv run python -m src.ap.cli evaluate evals/simple_tasks.yaml -d $(driver) -r eval_reports -t eval_threads
+
+eval_multistep:
+	@echo "🧪 Running multi step evaluation..."
+	uv run python -m src.ap.cli evaluate evals/multistep_tasks.yaml -d $(driver) -r eval_reports -t eval_threads
+
+eval_complex:
+	@echo "🧪 Running complex evaluation..."
+	uv run python -m src.ap.cli evaluate evals/complex_tasks.yaml -d $(driver) -r eval_reports -t eval_threads
+
+
+.PHONY: eval_simple eval_multistep eval_complex
