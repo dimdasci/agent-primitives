@@ -66,3 +66,30 @@ The system uses `config.yaml` for driver-specific configuration. Each driver sec
 ## Testing
 
 Tests are in `tests/` directory covering actions, config, and either utilities. Run with `make tests`.
+
+## Evaluation System
+
+The project includes a comprehensive evaluation framework (`src/ap/eval.py`) for testing agent performance against standardized datasets:
+
+### Evaluation Datasets
+
+Located in `evals/` directory:
+- `simple_tasks.yaml`: Basic arithmetic operations
+- `multistep_tasks.yaml`: Multi-step problem solving
+- `complex_tasks.yaml`: Complex reasoning tasks
+
+### Running Evaluations
+
+Use the evaluation system to test agent performance:
+```bash
+python -m src.ap.eval --dataset evals/simple_tasks.yaml --driver openai
+```
+
+### Evaluation Features
+
+- **Rich UI**: Progress bars, result tables, and summary panels
+- **Detailed Reporting**: JSON reports with test results and thread details
+- **Multiple Drivers**: Test against different LLM providers
+- **Mock User Input**: Automated testing with predefined user responses
+- **Result Validation**: Flexible comparison for numeric and string outputs
+- **Thread Debugging**: Saves detailed thread information for analysis
