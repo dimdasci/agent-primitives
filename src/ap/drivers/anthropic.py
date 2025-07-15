@@ -78,9 +78,9 @@ async def get_completion(
         model = Config.get("model")
 
         with ctx.langfuse.start_as_current_generation(
-            name=__name__, 
-            model=model, 
-            input={"messages": messages, "system": system_prompt}
+            name=__name__,
+            model=model,
+            input={"messages": messages, "system": system_prompt},
         ) as generation:
             completion = await anthropic_client.messages.create(
                 model=model,
@@ -187,7 +187,8 @@ def get_prompts(thread: Thread) -> tuple[str, str]:
     examples = Config.get_prompt("anthropic", "examples")
     system_prompt = Config.get_prompt("anthropic", "system")
     user_prompt = Config.get_prompt(
-        "anthropic", "user",
+        "anthropic",
+        "user",
         actions_full=ACTIONS_FULL,
         actions_short=ACTIONS_SHORT,
         examples=examples,

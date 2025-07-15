@@ -177,13 +177,15 @@ def get_prompts(thread: Thread) -> tuple[str, str]:
     """
     examples = Config.get_prompt("openai", "examples")
     system_prompt = Config.get_prompt(
-        "openai", "system",
+        "openai",
+        "system",
         actions_full=ACTIONS_FULL,
         actions_short=ACTIONS_SHORT,
         examples=examples,
     )
     user_prompt = Config.get_prompt(
-        "openai", "user",
+        "openai",
+        "user",
         query=thread.query,
         thread=str(thread),
     )

@@ -92,7 +92,6 @@ class Config:
 
         return default
 
-
     @classmethod
     def get_available_drivers(cls) -> list[str]:
         """Get list of available driver names from config.
@@ -118,11 +117,11 @@ class Config:
         try:
             with open(prompt_path) as f:
                 template = f.read().strip()
-            
+
             # Examples files don't need templating, return as-is
             if prompt_type == "examples":
                 return template
-            
+
             # Use Template instead of format to avoid brace conflicts
             template_obj = Template(template)
             return template_obj.safe_substitute(**kwargs)

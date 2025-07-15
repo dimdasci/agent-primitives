@@ -75,13 +75,13 @@ async def get_completion(
     """
     try:
         model = Config.get("model")
-        
+
         with ctx.langfuse.start_as_current_generation(
             name=__name__, model=model, input={"messages": messages}
         ) as generation:
             # Use the async client from ollama
             client = ollama.AsyncClient()
-            
+
             completion = await client.chat(
                 model=model,
                 messages=messages,
@@ -91,15 +91,17 @@ async def get_completion(
                 },
                 format="json",  # Request JSON format
             )
-            
+
             # Extract token usage from ollama response
             usage_details = {}
-            if (hasattr(completion, 'prompt_eval_count') and 
-                completion.prompt_eval_count):
+            if (
+                hasattr(completion, "prompt_eval_count")
+                and completion.prompt_eval_count
+            ):
                 usage_details["input"] = completion.prompt_eval_count
-            if hasattr(completion, 'eval_count') and completion.eval_count:
+            if hasattr(completion, "eval_count") and completion.eval_count:
                 usage_details["output"] = completion.eval_count
-            
+
             # Update generation with response and usage
             generation.update(output=completion, usage_details=usage_details)
 
@@ -108,9 +110,7 @@ async def get_completion(
         return Left(f"Error getting completion from Ollama: {str(e)}")
 
 
-def parse_completion(
-    ctx: Context, completion: Any
-) -> Either[dict[str, Any], str]:
+def parse_completion(ctx: Context, completion: Any) -> Either[dict[str, Any], str]:
     """Parse the completion response to a JSON object.
 
     Args:
@@ -136,17 +136,13 @@ def parse_completion(
             # Sometimes models wrap JSON in ```json blocks
             import re
 
-            json_match = re.search(
-                r"```json\s*(.*?)\s*```", content, re.DOTALL
-            )
+            json_match = re.search(r"```json\s*(.*?)\s*```", content, re.DOTALL)
             if json_match:
                 try:
                     # replace \n with space to handle multiline JSON
-                    content = json_match.group(1).replace("\n", " ")                    
+                    content = json_match.group(1).replace("\n", " ")
                     json_obj = json.loads(content)
-                    ctx.logger.info(
-                        f"Extracted JSON action from Ollama: {json_obj}"
-                    )
+                    ctx.logger.info(f"Extracted JSON action from Ollama: {json_obj}")
                     return Right(json_obj)
                 except json.JSONDecodeError:
                     pass
@@ -199,7 +195,8 @@ def get_prompts(thread: Thread) -> tuple[str, str]:
     examples = Config.get_prompt("ollama", "examples")
     system_prompt = Config.get_prompt("ollama", "system")
     user_prompt = Config.get_prompt(
-        "ollama", "user",
+        "ollama",
+        "user",
         actions_full=ACTIONS_FULL,
         actions_short=ACTIONS_SHORT,
         examples=examples,
