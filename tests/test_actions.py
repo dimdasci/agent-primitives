@@ -58,7 +58,7 @@ class TestAction:
         result = add.execute()
         assert result == 5
         assert add.result == 5
-        assert str(add) == "Add(a=2.0, b=3.0), result=5.0)"
+        assert str(add) == "Add(a=2.0, b=3.0), result=5.0"
     
     def test_subtract_action(self):
         """Test the Subtract action."""
@@ -71,7 +71,7 @@ class TestAction:
         result = subtract.execute()
         assert result == 2
         assert subtract.result == 2
-        assert str(subtract) == "Subtract(a=5.0, b=3.0), result=2.0)"
+        assert str(subtract) == "Subtract(a=5.0, b=3.0), result=2.0"
     
     def test_multiply_action(self):
         """Test the Multiply action."""
@@ -84,7 +84,7 @@ class TestAction:
         result = multiply.execute()
         assert result == 6
         assert multiply.result == 6
-        assert str(multiply) == "Multiply(a=2.0, b=3.0), result=6.0)"
+        assert str(multiply) == "Multiply(a=2.0, b=3.0), result=6.0"
     
     def test_divide_action(self):
         """Test the Divide action."""
@@ -97,7 +97,7 @@ class TestAction:
         result = divide.execute()
         assert result == 3
         assert divide.result == 3
-        assert str(divide) == "Divide(a=6.0, b=2.0), result=3.0)"
+        assert str(divide) == "Divide(a=6.0, b=2.0), result=3.0"
     
     def test_divide_by_zero(self):
         """Test that dividing by zero raises an error."""
@@ -123,7 +123,7 @@ class TestAction:
         assert result == "John"
         assert ask.result == "John"
         assert mock_io.prompts == ["What is your name?"]
-        assert str(ask) == "RequestUserInput(request=What is your name?), result=John)"
+        assert str(ask) == "RequestUserInput(request=What is your name?), result=John"
     
     def test_done_action(self):
         """Test the Done action."""
