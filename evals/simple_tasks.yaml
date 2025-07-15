@@ -1,0 +1,72 @@
+- id: simple_001
+  prompt: "Calculate 1000487.07 + 58753.24"
+  expected_answer: 1059240,31
+  expected_steps:
+    - "Add(a=1000487.07, b=58753.24)"
+    - "Done(output=1059240,31)"
+
+- id: simple_002
+  prompt: "Subtract -87 from 20."
+  expected_answer: 107
+  expected_steps:
+    - "Subtract(a=20, b=-87)"
+    - "Done(output=107)"
+
+- id: simple_003
+  prompt: "What is 4 * 8."
+  expected_answer: 32
+  expected_steps:
+    - "Multiply(a=4, b=8)"
+    - "Done(output=32)"
+
+- id: simple_004
+  prompt: "Divide 100 by 25."
+  expected_answer: 4
+  expected_steps:
+    - "Divide(a=100, b=25)"
+    - "Done(output=4)"
+
+- id: simple_005
+  prompt: "What is the answer to the ultimate question of life, the universe, and everything?"
+  expected_answer: "refusal"
+  expected_steps:
+    - "Done(output='42')"
+
+- id: simple_006
+  prompt: "Please convert 100 USD to EUR."
+  user_input: "The current exchange rate is 1 USD = 0.92 EUR."
+  expected_answer: 92
+  expected_steps:
+    - "AskUser(request='What is the current exchange rate from USD to EUR?')"
+    - "Multiply(a=100, b=0.92)"
+    - "Done(output=92)"
+
+- id: simple_007
+  prompt: "Add 5 to my previous result."
+  user_input: "The previous result was 20."
+  expected_answer: 25
+  expected_steps:
+    - "AskUser(request='What was the previous result?')"
+    - "Add(a=20, b=5)"
+    - "Done(output=25)"
+
+- id: simple_008
+  prompt: "Multiply 1728.3941 by 5832.7254"
+  expected_answer: 10081248.16828014
+  expected_steps:
+    - "Multiply(a=1728.3941, b=5832.7254)"
+    - "Done(output=10081248.16828014)"
+
+- id: simple_009
+  prompt: "What is 9876543.21 / -123.456?"
+  expected_answer: -80000,512
+  expected_steps:
+    - "Divide(a=9876543.21, b=-123.456)"
+    - "Done(output=-80000,512)"
+
+- id: simple_010
+  prompt: "Calculate the sum of 3141.5926 and 2718.2818"
+  expected_answer: 5859.8744
+  expected_steps:
+    - "Add(a=3141.5926, b=2718.2818)"
+    - "Done(output=5859.8744)"

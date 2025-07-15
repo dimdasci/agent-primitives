@@ -1,0 +1,34 @@
+- id: complex_001
+  prompt: "Calculate the total cost of 15 items at 19USD each, with either a 5USD discount or a 10% discount."
+  user_input: "Apply the 10% discount."
+  expected_answer: 256.5
+  expected_steps:
+    - "AskUser(request='Should I apply the $5 flat discount or the 10% percentage discount?')"
+    - "Multiply(a=15, b=19)"
+    - "Multiply(a=285.0, b=0.10)"
+    - "Subtract(a=285.0, b=28.5)"
+    - "Done(output=256.5)"
+
+- id: complex_002
+  prompt: "How many trees I need to plant if I want to cover 50 acres, with each tree covering 0.2 acres, but some of them will not grow?"
+  user_input: "I expect 10% will not."
+  expected_answer: 277.77777777777777
+  expected_steps:
+    - "AskUser(request='What percentage of the trees do you expect will not grow?')"
+    - "Divide(a=50.0, b=0.2)"
+    - "Divide(a=250.0, b=0.9)"
+    - "Done(output=277.77777777777777)"
+
+- id: complex_003
+  prompt: "Calculate expression: (350 + x) / (418 - y) + 69"
+  user_input: 
+  - "x is 15"
+  - "and y is 186"
+  expected_answer: 133.0
+  expected_steps:
+    - "AskUser(request='What is the value of x?')"
+    - "AskUser(request='What is the value of y?')"    
+    - "Add(a=350.0, b=15)"
+    - "Subtract(a=418.0, b=186)"
+    - "Divide(a=365.0, b=232.0)"    
+    - "Done(output=133.0)"

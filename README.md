@@ -1,68 +1,313 @@
-# Agent Primitives Exploration
+# Agent Primitives (ap2)
 
-The project is based on [Building the 12-factor agent template from scratch](https://github.com/humanlayer/12-factor-agents/blob/main/workshops/2025-05/walkthrough.md) Workshop.
+A research project exploring how general software engineering design patterns can be applied to agentic system design.
 
-The key concepts are stated as [12 principles]((https://github.com/humanlayer/12-factor-agents/tree/main)) of building reliable agents, following the 12-factor app methodology:
-- Use declarative formats for setup automation, to minimize time and cost for new developers joining the project;
-- Have a clean contract with the underlying operating system, offering maximum portability between execution environments;
-- Are suitable for deployment on modern cloud platforms, obviating the need for servers and systems administration;
-- Minimize divergence between development and production, enabling continuous deployment for maximum agility;
-- And can scale up without significant changes to tooling, architecture, or development practices.
+## Purpose
 
-## Implementation Overview
+This project demonstrates that many challenges in agentic systems can be elegantly solved using well-established software engineering patterns, without requiring specialized frameworks. While tools like LangChain and others have made significant contributions to the field, this project explores an alternative approach that leverages fundamental design patterns.
 
-This project implements a simple calculator agent using [BAML](https://docs.boundaryml.com/home) as the core LLM interface. The implementation demonstrates key 12-factor agent principles through a modular architecture.
+**Core Exploration Areas:**
+- **Action Pattern**: How structured actions with result caching can simplify agent behavior
+- **Driver Pattern**: Clean abstraction for different LLM providers
+- **Functional Error Handling**: Either/Result types for robust error management
+- **Dependency Injection**: Clean separation of concerns in agent systems
+- **Evaluation Systems**: Comprehensive testing approaches for agent behavior
+
+## Key Demonstrations
+
+### Action System
+- **Pydantic-based Actions**: Type-safe action definitions with validation
+- **Execute-once Pattern**: Automatic result caching to prevent redundant computation
+- **Chain of Thought**: Built-in reasoning trace for each action
+
+### Multi-LLM Support
+- **OpenAI**: GPT-4 and other OpenAI models
+- **Anthropic**: Claude models
+- **Ollama**: Local model support
+- **Extensible**: Easy to add new providers
+
+### Evaluation Framework
+- **Rich UI**: Progress bars, result tables, and summary panels
+- **Multiple Test Suites**: Simple, multistep, and complex task evaluation
+- **Automated Testing**: Mock user inputs for consistent evaluation
+- **Detailed Reporting**: JSON reports with thread debugging information
+
+### Architecture Patterns
+- **Dependency Injection**: Clean separation of concerns
+- **Factory Pattern**: Driver selection and initialization
+- **Either/Result Types**: Functional error handling
+- **Chainable APIs**: Fluent interface for thread operations
+
+## Quick Start
+
+### Installation
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd agent-primitives
+
+# Install dependencies
+uv sync
+```
+
+### Basic Usage
+
+```python
+from src.ap.actions import Add, Done
+from src.ap.agent import go
+from src.ap.context import Context
+from src.ap.thread import Thread
+from src.ap.inmemory import ThreadInMemoryStore
+
+# Create an action
+action = Add(a=10, b=20)
+result = action.execute()
+print(result)  # Output: 30
+
+# Run the agent loop
+async def example():
+    # Initialize context and thread
+    context = Context(...)
+    thread = Thread(query="Calculate 15 + 25")
+    
+    # Run the agent
+    result = await go(context, thread.id)
+    print(result)
+```
+
+### CLI Usage
+
+```bash
+# Run evaluation on a dataset
+uv run python -m src.ap.eval --dataset evals/simple_tasks.yaml --driver openai
+
+# Run with different drivers
+uv run python -m src.ap.eval --dataset evals/complex_tasks.yaml --driver anthropic
+```
+
+## Architecture
 
 ### Core Components
 
-#### 1. BAML Configuration (`baml_src/`)
-- **Function Definition**: `DetermineNextStep` function in `agent.baml:21-45` that processes conversation threads and determines next actions
-- **Type System**: Structured types for calculator operations (`CalculatorTools`) and human interactions (`HumanTools`)
-- **Client Configuration**: Multiple LLM clients with fallback and retry policies (`clients.baml`)
-- **Code Generation**: Python client automatically generated from BAML definitions (`generators.baml`)
+```
+src/ap/
+├── actions.py         # Action definitions and base classes
+├── agent.py           # Main agent loop implementation
+├── config.py          # Configuration management
+├── context.py         # Dependency injection container
+├── thread.py          # Conversation state management
+├── inmemory.py        # In-memory storage backend
+├── either.py          # Functional error handling
+├── eval.py            # Evaluation framework
+└── drivers/           # LLM driver implementations
+    ├── factory.py     # Driver factory
+    ├── base.py        # Driver protocol
+    ├── openai.py      # OpenAI integration
+    ├── anthropic.py   # Anthropic integration
+    └── ollama.py      # Ollama integration
+```
 
-#### 2. Agent Core (`src/agent_primitives/`)
-- **Agent Loop**: `agent.py:13-40` implements the main agent execution loop
-- **Event System**: `model.py:28-42` defines event-driven architecture with `Thread` and `Event` classes
-- **Intent Mapping**: `agent.py:5-10` maps BAML intents to Python functions for calculator operations
+### Agent Loop
 
-#### 3. Interface Layer
-- **FastAPI Server**: `src/api/main.py` provides RESTful API with thread management
-- **CLI Interface**: `src/cli/main.py` offers interactive command-line experience
-- **State Management**: `src/state/` implements thread persistence with protocol-based design
+The core agent follows a simple but powerful loop:
 
-#### 4. Testing Strategy
-BAML enables test-driven development through declarative test definitions in `agent.baml:47-151`:
-- Unit tests for specific intents (`HelloWorld`, `MathOperation`)
-- Integration tests for multi-step workflows (`LongMath`)
-- Error handling tests (`MathOperationWithClarification`)
+1. **Determine Action**: LLM driver selects the next action
+2. **Execute Action**: Action is executed with result caching
+3. **Update Thread**: Thread history is updated
+4. **Continue or Terminate**: Loop continues until completion
 
-### Architecture Benefits
+```python
+async def go(ctx: Context, thread_id: str) -> Either[Actions, str]:
+    """Process a task through the agent loop."""
+    # 1. Get thread from storage
+    # 2. Initialize driver
+    # 3. Loop until terminal action or max iterations
+    # 4. Return final result or error
+```
 
-The implementation demonstrates several 12-factor principles:
-- **Declarative Configuration**: BAML provides declarative LLM function definitions
-- **Explicit Dependencies**: Clear separation between BAML config and Python implementation
-- **Stateless Processes**: Agent functions are stateless with external thread management
-- **Port Binding**: API and CLI provide different interface bindings
-- **Concurrency**: Async/await pattern throughout for scalable execution
+## Design Patterns Explored
 
-## BAML Evaluation
+### Action Pattern
+```python
+class MyAction(Action):
+    param1: str = Field(..., description="Required parameter")
+    param2: int = Field(default=0, description="Optional parameter")
+    
+    def _compute_result(self, **kwargs: Any) -> Result:
+        # Implement your action logic
+        return f"Result: {self.param1} * {self.param2}"
+```
 
-### Pros
-- **Prompts as Functions**: BAML treats prompts as first-class functions with type safety, enabling test-driven development of LLM interactions
-- **Multi-Model Support**: Built-in support for OpenAI, Anthropic, Google AI with fallback/retry policies
-- **Type Safety**: Strong typing system prevents runtime errors and improves developer experience
-- **Testing Framework**: Declarative test syntax with assertions makes prompt engineering more reliable
-- **Code Generation**: Automatic client generation eliminates boilerplate and ensures consistency
+### Driver Pattern
+```python
+class MyDriver(Driver):
+    async def next_action(self, thread: Thread) -> Either[Actions, str]:
+        # Implement LLM interaction
+        # Return parsed action or error
+```
 
-### Cons
-- **Vendor Lock-in**: Proprietary Boundary Studio required for advanced observability and monitoring
-- **Black Box Clients**: Generated clients (`src/baml_client/`) are not easily customizable or extensible
-- **Limited Ecosystem**: No integration with popular open-source tools like Langfuse, Weights & Biases
-- **12-Factor Violations**: Contradicts principles of explicit dependencies and maximum portability
-- **Learning Curve**: Domain-specific language requires additional learning investment
+### Either/Result Pattern
+```python
+from src.ap.either import Either, Left, Right
 
-### Conclusion
+def safe_operation() -> Either[str, int]:
+    try:
+        result = compute_something()
+        return Right(result)
+    except Exception as e:
+        return Left(str(e))
 
-While BAML provides excellent developer experience and type safety for LLM interactions, it introduces vendor dependencies that conflict with 12-factor principles. The trade-off between convenience and portability should be carefully considered for production deployments.
+# Usage
+result = safe_operation()
+if isinstance(result, Right):
+    print(f"Success: {result.value}")
+else:
+    print(f"Error: {result.error}")
+```
 
+## Configuration
+
+Configure drivers in `config.yaml`:
+
+```yaml
+default:
+  max_actions: 10
+
+openai:
+  model: gpt-4-turbo
+  temperature: 0.0
+  max_tokens: 1000
+
+anthropic:
+  model: claude-3-haiku-20240307
+  temperature: 0.0
+  max_tokens: 1000
+```
+
+## Evaluation System
+
+### Test Datasets
+
+Located in `evals/` directory:
+- `simple_tasks.yaml`: Basic arithmetic operations
+- `multistep_tasks.yaml`: Multi-step problem solving  
+- `complex_tasks.yaml`: Complex reasoning tasks
+
+### Example Test Case
+
+```yaml
+- id: simple_001
+  prompt: "Calculate 1000487.07 + 58753.24"
+  expected_answer: 1059240.31
+  expected_steps:
+    - "Add(a=1000487.07, b=58753.24)"
+    - "Done(output=1059240.31)"
+```
+
+### Running Evaluations
+
+```bash
+# Run specific dataset
+uv run python -m src.ap.eval --dataset evals/simple_tasks.yaml --driver openai
+
+# The system will show:
+# - Progress bars during execution
+# - Results table with pass/fail status
+# - Summary statistics
+# - Detailed JSON reports
+```
+
+## Development
+
+### Commands
+
+```bash
+# Install dependencies
+uv sync
+
+# Run tests
+make tests
+
+# Run linting
+make lint
+
+# Run type checking
+make typecheck
+
+# Format code
+make format
+
+# Auto-fix issues
+make fix
+```
+
+## Extending the Implementation
+
+### Adding New Actions
+
+```python
+class SearchWeb(Action):
+    query: str = Field(..., description="Search query")
+    
+    def _compute_result(self, **kwargs: Any) -> Result:
+        # Implement web search logic
+        return {"results": [...]}
+```
+
+### Adding New Drivers
+
+```python
+class MyLLMDriver(Driver):
+    async def next_action(self, thread: Thread) -> Either[Actions, str]:
+        # Implement your LLM integration
+        pass
+```
+
+### Adding New Evaluation Datasets
+
+```yaml
+- id: custom_001
+  prompt: "Your test prompt"
+  expected_answer: "Expected result"
+  expected_steps:
+    - "Action1(param=value)"
+    - "Done(output=result)"
+  user_input: "Optional user input"  # For interactive tests
+```
+
+## Research Goals
+
+This project aims to demonstrate that:
+
+1. **Standard patterns work**: Many agentic system challenges can be solved with well-known software engineering patterns
+2. **Simplicity over complexity**: Simple, focused implementations can be more maintainable and understandable
+3. **Evaluation is crucial**: Comprehensive testing is essential for reliable agent behavior
+4. **Abstraction helps**: Clean interfaces make systems more flexible and testable
+
+## Contributing
+
+This is a research project exploring design patterns in agentic systems. Contributions that demonstrate new patterns or improve existing implementations are welcome:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and linting: `make tests && make lint`
+5. Submit a pull request
+
+## Related Work
+
+- [12-Factor Agents](https://github.com/humanlayer/12-factor-agents/tree/main) - Inspiration for this project's design principles
+- [Instructor](https://python.useinstructor.com) - Structured outputs from LLMs using Pydantic
+- [LangChain](https://langchain.com/) - Comprehensive framework for LLM applications
+- [Langfuse](https://langfuse.com/) - Observability and tracing
+- [Pydantic](https://pydantic.dev/) - Data validation and settings management
+- [Rich](https://rich.readthedocs.io/) - Rich text and beautiful formatting
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+---
+
+*This project explores alternative approaches to agentic system design while respecting the valuable contributions of existing frameworks and tools in the field.*

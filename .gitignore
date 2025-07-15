@@ -26,4 +26,12 @@ baml-session.md
 
 # Log files
 log/
+logs/
 *.log
+
+# MacOS specific files
+.DS_Store
+
+# Evals
+eval_threads/
+eval_reports/
